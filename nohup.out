@@ -1,0 +1,115 @@
+📡 محاولة جديدة للحجز...
+⚠️ خطأ مختلف: Failed to verify the HTTP(S) Signature
+📡 محاولة جديدة للحجز...
+⚠️ خطأ مختلف: Failed to verify the HTTP(S) Signature
+📡 محاولة جديدة للحجز...
+⚠️ خطأ مختلف: Failed to verify the HTTP(S) Signature
+📡 محاولة جديدة للحجز...
+⚠️ خطأ مختلف: Failed to verify the HTTP(S) Signature
+📡 محاولة جديدة للحجز...
+⚠️ خطأ مختلف: Failed to verify the HTTP(S) Signature
+📡 محاولة جديدة للحجز...
+⚠️ خطأ مختلف: Failed to verify the HTTP(S) Signature
+📡 محاولة جديدة للحجز...
+Traceback (most recent call last):
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/urllib3/connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/urllib3/connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/urllib3/connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+  File "/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 1450, in getresponse
+    response.begin()
+    ~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 336, in begin
+    version, status, reason = self._read_status()
+                              ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 305, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+                             " response")
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/oci/_vendor/requests/adapters.py", line 447, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        enforce_content_length=True
+    )
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/urllib3/connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/urllib3/util/retry.py", line 490, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/urllib3/util/util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/urllib3/connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/urllib3/connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/urllib3/connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+  File "/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 1450, in getresponse
+    response.begin()
+    ~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 336, in begin
+    version, status, reason = self._read_status()
+                              ~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.2_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/http/client.py", line 305, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+                             " response")
+urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/oci/base_client.py", line 903, in request
+    response = self.session.request(
+        request.method,
+    ...<5 lines>...
+        stream=stream,
+        timeout=self.timeout)
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/oci/_vendor/requests/sessions.py", line 536, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/oci/_vendor/requests/sessions.py", line 652, in send
+    r = adapter.send(request, **kwargs)
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/oci/_vendor/requests/adapters.py", line 509, in send
+    raise ConnectionError(err, request=request)
+oci._vendor.requests.exceptions.ConnectionError: (ProtocolError('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')), 'Request Endpoint: POST https://iaas.eu-frankfurt-1.oraclecloud.com/20160918/instances See https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdk_troubleshooting.htm for help troubleshooting this error, or contact support and provide this full error message.')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/create_instance.py", line 52, in <module>
+    if hunt_instance():
+       ~~~~~~~~~~~~~^^
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/create_instance.py", line 39, in hunt_instance
+    compute_client.launch_instance(instance_details)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/oci/core/compute_client.py", line 8748, in launch_instance
+    return self.base_client.call_api(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        resource_path=resource_path,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+        api_reference_link=api_reference_link,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        required_arguments=required_arguments)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/oci/base_client.py", line 667, in call_api
+    response = self.request(request, allow_control_chars, operation_name, api_reference_link)
+  File "/Users/AyshaKassem/Desktop/Web/collaborative code editor/.venv/lib/python3.14/site-packages/oci/base_client.py", line 949, in request
+    raise exceptions.RequestException(e)
+oci.exceptions.RequestException: (ProtocolError('Connection aborted.', RemoteDisconnected('Remote end closed connection without response')), 'Request Endpoint: POST https://iaas.eu-frankfurt-1.oraclecloud.com/20160918/instances See https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdk_troubleshooting.htm for help troubleshooting this error, or contact support and provide this full error message.')
