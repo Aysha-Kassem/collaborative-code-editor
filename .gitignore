@@ -18,5 +18,13 @@ coverage/
 .vscode/
 .venv/
 
+.gitignore
+
 
 create_instance.py
+
+alyt9951@gmail.com-2026-04-19T19_27_40.727Z.pem
+alyt9951@gmail.com-2026-04-19T19_29_02.557Z_public.pem
+private_key.pem
+ssh-key-2026-04-19.key
+ssh-key-2026-04-19.key.pub
