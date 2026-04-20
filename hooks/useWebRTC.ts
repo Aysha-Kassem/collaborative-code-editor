@@ -7,12 +7,13 @@ import { useEffect, useRef, useCallback, useState } from 'react'
 import { Socket } from 'socket.io-client'
 
 export interface CodeOperation {
-  type: 'insert' | 'delete' | 'replace' | 'cursor' | 'language'
+  type: 'insert' | 'delete' | 'replace' | 'cursor' | 'language' | 'file-switch'
   position?: number
   text?: string
   length?: number
   cursor?: { line: number; column: number }
   language?: string
+  filePath?: string
   from: string
   timestamp: number
 }
@@ -41,6 +42,23 @@ export function useWebRTC({ socket, myPeerId, roomId, localStream, onCodeOperati
   const peers = useRef<Map<string, PeerState>>(new Map())
   const [remoteStreams, setRemoteStreams] = useState<Map<string, MediaStream>>(new Map())
   const [connectedPeers, setConnectedPeers] = useState<{ peerId: string; username: string }[]>([])
+  const makingOffer = useRef<Set<string>>(new Set())
+
+  const negotiateConnection = useCallback(
+    async (remotePeerId: string, connection: RTCPeerConnection) => {
+      if (!socket || makingOffer.current.has(remotePeerId) || connection.signalingState !== 'stable') return
+
+      try {
+        makingOffer.current.add(remotePeerId)
+        const offer = await connection.createOffer()
+        await connection.setLocalDescription(offer)
+        socket.emit('offer', { to: remotePeerId, offer: connection.localDescription, from: myPeerId })
+      } finally {
+        makingOffer.current.delete(remotePeerId)
+      }
+    },
+    [socket, myPeerId]
+  )
 
   // ── Create RTCPeerConnection for a given remote peer ──────────────────────
   const createPeerConnection = useCallback(
@@ -70,30 +88,30 @@ export function useWebRTC({ socket, myPeerId, roomId, localStream, onCodeOperati
           cleanupPeer(remotePeerId)
         }
       }
+      connection.onnegotiationneeded = async () => {
+        await negotiateConnection(remotePeerId, connection)
+      }
 
       const peerState: PeerState = { peerId: remotePeerId, username, connection }
       peers.current.set(remotePeerId, peerState)
       return peerState
     },
-    [socket, myPeerId, localStream]
+    [socket, myPeerId, localStream, negotiateConnection]
   )
 
   // ── Initiate connection (caller) ──────────────────────────────────────────
   const initiateCall = useCallback(
     async (remotePeerId: string, username: string) => {
       const peerState = createPeerConnection(remotePeerId, username)
-
-      const offer = await peerState.connection.createOffer()
-      await peerState.connection.setLocalDescription(offer)
-      socket?.emit('offer', { to: remotePeerId, offer: peerState.connection.localDescription, from: myPeerId })
+      await negotiateConnection(remotePeerId, peerState.connection)
     },
-    [createPeerConnection, socket, myPeerId]
+    [createPeerConnection, negotiateConnection]
   )
 
   // ── Handle incoming offer (callee) ────────────────────────────────────────
   const handleOffer = useCallback(
     async ({ from, offer, username }: { from: string; offer: RTCSessionDescriptionInit; username?: string }) => {
-      const peerState = createPeerConnection(from, username ?? 'Guest')
+      const peerState = peers.current.get(from) ?? createPeerConnection(from, username ?? 'Guest')
 
       await peerState.connection.setRemoteDescription(new RTCSessionDescription(offer))
       const answer = await peerState.connection.createAnswer()
@@ -130,6 +148,26 @@ export function useWebRTC({ socket, myPeerId, roomId, localStream, onCodeOperati
   }
 
   // ── Wire up socket events ─────────────────────────────────────────────────
+  useEffect(() => {
+    if (!localStream) return
+
+    peers.current.forEach((peer) => {
+      const senders = peer.connection.getSenders()
+
+      localStream.getTracks().forEach((track) => {
+        const existingSender = senders.find((sender) => sender.track?.kind === track.kind)
+        if (!existingSender) {
+          peer.connection.addTrack(track, localStream)
+          return
+        }
+
+        if (existingSender.track?.id !== track.id) {
+          void existingSender.replaceTrack(track)
+        }
+      })
+    })
+  }, [localStream])
+
   useEffect(() => {
     if (!socket) return
 

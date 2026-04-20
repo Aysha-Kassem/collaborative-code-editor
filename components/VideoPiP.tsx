@@ -20,13 +20,30 @@ function VideoTile({ stream, muted = false, label }: VideoTileProps) {
 
   return (
     <div style={{ position: 'relative', borderRadius: 6, overflow: 'hidden', background: '#111', flexShrink: 0 }}>
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted={muted}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-      />
+      {stream ? (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted={muted}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+      ) : (
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#7d8590',
+            fontSize: 11,
+            background: 'linear-gradient(135deg, #101623 0%, #0f172a 100%)',
+          }}
+        >
+          media off
+        </div>
+      )}
       <span style={{
         position: 'absolute', bottom: 4, left: 6,
         fontSize: 10, color: '#fff', background: 'rgba(0,0,0,0.55)',
@@ -100,7 +117,7 @@ export default function VideoPiP({
         }}>
           <button
             onClick={onToggleMic}
-            title={micActive ? 'Mute mic' : 'Unmute mic'}
+            title={micActive ? 'Mute mic' : 'Enable mic'}
             style={{
               background: micActive ? '#2d2d4e' : '#c0392b',
               border: 'none', borderRadius: 6, padding: '4px 10px',
@@ -110,7 +127,7 @@ export default function VideoPiP({
           </button>
           <button
             onClick={onToggleCam}
-            title={camActive ? 'Stop camera' : 'Start camera'}
+            title={camActive ? 'Stop camera' : 'Enable camera'}
             style={{
               background: camActive ? '#2d2d4e' : '#c0392b',
               border: 'none', borderRadius: 6, padding: '4px 10px',

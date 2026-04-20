@@ -2,7 +2,7 @@
 // Lightweight Operational Transform for collaborative text editing.
 // Supports insert, delete, replace operations with transformation against concurrent ops.
 
-export type OpType = 'insert' | 'delete' | 'replace' | 'cursor' | 'language'
+export type OpType = 'insert' | 'delete' | 'replace' | 'cursor' | 'language' | 'file-switch'
 
 export interface TextOp {
   type: OpType
@@ -15,8 +15,8 @@ export interface TextOp {
 
 // Transform op A against concurrent op B (A happened "after" B in causal order)
 export function transformOp(a: TextOp, b: TextOp): TextOp {
-  if (a.type === 'cursor' || a.type === 'language') return a
-  if (b.type === 'cursor' || b.type === 'language') return a
+  if (a.type === 'cursor' || a.type === 'language' || a.type === 'file-switch') return a
+  if (b.type === 'cursor' || b.type === 'language' || b.type === 'file-switch') return a
 
   const aPos = a.position
   const bPos = b.position
@@ -49,7 +49,7 @@ export function transformOp(a: TextOp, b: TextOp): TextOp {
 
 // Apply an op to a string, returning the new string
 export function applyOp(content: string, op: TextOp): string {
-  if (op.type === 'cursor' || op.type === 'language') return content
+  if (op.type === 'cursor' || op.type === 'language' || op.type === 'file-switch') return content
 
   const pos = Math.max(0, Math.min(op.position, content.length))
 

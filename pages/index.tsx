@@ -24,8 +24,8 @@ export default function Home() {
   const [myPeerId] = useState(() => uuidv4())
   const [socket, setSocket] = useState<Socket | null>(null)
   const [localStream, setLocalStream] = useState<MediaStream | null>(null)
-  const [micActive, setMicActive] = useState(true)
-  const [camActive, setCamActive] = useState(true)
+  const [micActive, setMicActive] = useState(false)
+  const [camActive, setCamActive] = useState(false)
   const [pipMinimized, setPipMinimized] = useState(false)
   const [incomingOp, setIncomingOp] = useState<CodeOperation | null>(null)
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([])
@@ -89,7 +89,7 @@ export default function Home() {
       setPendingApproval(false)
       setRoomId(approvedRoomId)
       setPhase('editor')
-      setStatusMessage(`Approved by the admin. You are now inside room ${approvedRoomId}.`)
+      setStatusMessage(`Approved by the admin. You are now inside room ${approvedRoomId}. Camera and mic stay off until you enable them.`)
     }
 
     const handleJoinRejected = ({ reason }: { roomId: string; reason: string }) => {
@@ -135,36 +135,72 @@ export default function Home() {
     }
   }, [socket, roomId])
 
-  const acquireMedia = useCallback(async () => {
+  const acquireTrack = useCallback(async (kind: 'audio' | 'video') => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-      setLocalStream(stream)
-      return stream
+      const requestedStream = await navigator.mediaDevices.getUserMedia({
+        audio: kind === 'audio',
+        video: kind === 'video',
+      })
+      const requestedTrack = kind === 'audio' ? requestedStream.getAudioTracks()[0] : requestedStream.getVideoTracks()[0]
+      if (!requestedTrack) return false
+
+      setLocalStream((prev) => {
+        const nextTracks = prev ? prev.getTracks().filter((track) => track.kind !== kind) : []
+
+        prev?.getTracks()
+          .filter((track) => track.kind === kind)
+          .forEach((track) => track.stop())
+
+        nextTracks.push(requestedTrack)
+        return new MediaStream(nextTracks)
+      })
+
+      if (kind === 'audio') {
+        setMicActive(true)
+      } else {
+        setCamActive(true)
+      }
+
+      setErrorMessage('')
+      return true
     } catch {
-      console.warn('Media access denied — audio/video unavailable')
-      return null
+      setErrorMessage(kind === 'audio' ? 'Microphone permission was denied.' : 'Camera permission was denied.')
+      return false
     }
   }, [])
 
-  const handleToggleMic = () => {
-    localStream?.getAudioTracks().forEach((track) => {
-      track.enabled = !track.enabled
-    })
-    setMicActive((value) => !value)
-  }
+  const handleToggleMic = useCallback(async () => {
+    const audioTracks = localStream?.getAudioTracks() ?? []
+    if (audioTracks.length === 0) {
+      await acquireTrack('audio')
+      return
+    }
 
-  const handleToggleCam = () => {
-    localStream?.getVideoTracks().forEach((track) => {
-      track.enabled = !track.enabled
+    const nextState = !micActive
+    audioTracks.forEach((track) => {
+      track.enabled = nextState
     })
-    setCamActive((value) => !value)
-  }
+    setMicActive(nextState)
+  }, [acquireTrack, localStream, micActive])
+
+  const handleToggleCam = useCallback(async () => {
+    const videoTracks = localStream?.getVideoTracks() ?? []
+    if (videoTracks.length === 0) {
+      await acquireTrack('video')
+      return
+    }
+
+    const nextState = !camActive
+    videoTracks.forEach((track) => {
+      track.enabled = nextState
+    })
+    setCamActive(nextState)
+  }, [acquireTrack, localStream, camActive])
 
   const handleCreate = async () => {
     if (!socket || !username.trim()) return
 
     setErrorMessage('')
-    await acquireMedia()
 
     socket.emit(
       'create-room',
@@ -179,7 +215,7 @@ export default function Home() {
         setIsAdmin(true)
         setJoinRequests([])
         setPendingApproval(false)
-        setStatusMessage(`Room ${newRoomId} is reserved for you until you leave it.`)
+        setStatusMessage(`Room ${newRoomId} is reserved for you until you leave it. Camera and mic stay off until you enable them.`)
         setPhase('editor')
       }
     )
@@ -189,7 +225,6 @@ export default function Home() {
     if (!socket || !roomId.trim() || !username.trim()) return
 
     setErrorMessage('')
-    await acquireMedia()
 
     socket.emit(
       'request-join',
