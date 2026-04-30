@@ -1,142 +1,167 @@
-# 🚀 Collaborative Code Editor
+# Collaborative Code Editor
 
-محرر أكواد مشترك في الوقت الفعلي باستخدام **Next.js** + **Socket.IO** + **WebRTC**.
+A real-time collaborative code editor built with `Next.js`, `Socket.IO`, `WebRTC`, and the `Monaco Editor`.
 
----
+## Course Information
 
-## ⚡ المميزات
+This project was developed for the `Distributed Systems & Web Services` course under the supervision of `Dr. Abdelghafar Shenaway`.
 
-| الميزة | التقنية |
-|--------|---------|
-| مزامنة الكود لحظياً | Socket.IO عبر Node.js server |
-| دمج التعديلات المتعارضة | Operational Transform (OT) |
-| مؤشرات المستخدمين الآخرين | Monaco Decorations API |
-| فيديو وصوت | WebRTC MediaStream |
-| نافذة فيديو عائمة | Picture-in-Picture component |
-| دعم لغات متعددة | Monaco + Syntax Highlighting |
-| كتم الصوت/إيقاف الكاميرا | MediaTrack.enabled toggle |
-| روم خاص ومحجوز | Room ID reservation while admin is inside |
-| موافقة على الانضمام | Admin approve/reject join requests |
+## Team
 
----
+- Aysha Ahmed Kassem
+- Nada Khamis Etman
+- Maryam Ahmed Elsayed
+- Mohamed Kamal Mohamed
+- ABDELRHMAN MOUSTAFA SALEM
 
-## 🛠️ التثبيت والتشغيل
+## Overview
 
-```bash
-# 1. تثبيت الحزم
-npm install
+The application allows users to create private coding rooms, request access to existing rooms, collaborate on code in real time, and communicate through peer-to-peer audio/video streams.
 
-# 2. تشغيل في وضع التطوير
-npm run dev
+## Features
 
-# 3. افتح المتصفح
-# http://localhost:3000
-```
+- Real-time code synchronization using `Socket.IO`
+- Conflict handling with Operational Transform (`OT`)
+- Private room creation and room reservation
+- Admin approval and rejection flow for join requests
+- Multi-user remote cursor support
+- Audio and video communication with `WebRTC`
+- Monaco-based code editing experience
+- Floating picture-in-picture video component
+- Syntax highlighting for multiple languages
 
----
+## Tech Stack
 
-## 📐 هيكل المشروع
+- `Next.js`
+- `React`
+- `TypeScript`
+- `Socket.IO`
+- `WebRTC`
+- `@monaco-editor/react`
+- `PM2`
+- `Nginx`
 
-```
-collab-editor/
-├── pages/
-│   ├── index.tsx          # صفحة الدخول + واجهة المحرر الكاملة
-│   └── api/
-│       └── socket.ts      # Room security + Socket.IO signaling/broadcast
+## Project Structure
+
+```text
+collaborative-code-editor/
 ├── components/
-│   ├── CollabEditor.tsx   # Monaco Editor + OT integration
-│   ├── VideoPiP.tsx       # نافذة الفيديو العائمة
-│   └── RemoteCursors.tsx  # مؤشرات المستخدمين الآخرين
+│   ├── CollabEditor.tsx
+│   ├── RemoteCursors.tsx
+│   └── VideoPiP.tsx
 ├── hooks/
-│   └── useWebRTC.ts       # RTCPeerConnection + DataChannel + MediaStream
-└── lib/
-    └── ot.ts              # Operational Transform engine
+│   └── useWebRTC.ts
+├── lib/
+│   └── ot.ts
+├── pages/
+│   ├── api/
+│   │   └── socket.ts
+│   ├── _app.tsx
+│   └── index.tsx
+├── styles/
+│   └── globals.css
+├── deploy-oracle.sh
+├── ecosystem.config.js
+└── README.md
 ```
 
----
+## How It Works
 
-## 🔄 كيف يعمل
+### Collaboration Flow
 
-```
-Browser A                     Node.js / Socket.IO                    Browser B
-   │                                  │                                 │
-   │── create-room / request-join ───►│                                 │
-   │                                  │── approve / reject flow ───────►│
-   │── code-operation ───────────────►│── broadcast to room members ───►│
-   │                                  │                                 │
-   │──── offer / answer / ICE ───────►│──── relay to target peer ──────►│
-   │◄────────────────────────────── WebRTC media channel ───────────────►│
-```
+1. An admin creates a private room.
+2. The room ID becomes reserved while the admin remains inside the room.
+3. Another user submits a join request.
+4. The admin approves or rejects the request.
+5. Authorized users receive real-time code updates through `Socket.IO`.
+6. Audio/video signaling is exchanged through the server, while media flows directly through `WebRTC`.
 
-### تسلسل التعديل:
-1. المستخدم يكتب في Monaco
-2. `onChange` يُنتج diff بين النص القديم والجديد
-3. `diffToOps()` يحوّل الـ diff لعملية OT
-4. `Socket.IO` يرسل العملية إلى Node.js server
-5. السيرفر يعمل broadcast لكل أعضاء الروم المصرح لهم فقط
-6. الـ peer يستقبل العملية ويطبّق `transformOp()` ثم `applyOp()`
+### Editing Flow
 
----
+1. A user types in the Monaco editor.
+2. The app computes the difference between the previous and current code.
+3. The diff is converted into OT operations.
+4. The operation is sent to the server.
+5. The server broadcasts it to approved room members.
+6. Peers transform and apply the operation locally.
 
-## 🔐 Security Flow
+## Local Development
 
-1. الـ admin فقط هو اللي يقدر ينشئ الغرفة.
-2. بمجرد إنشاء الغرفة، `roomId` يبقى محجوز ومحدش يقدر ينشئ نفس الرقم.
-3. أي مستخدم يريد الدخول يرسل `request-join`.
-4. المستخدم يظل في حالة انتظار لحد ما الـ admin يعمل `approve` أو `reject`.
-5. لو الـ admin خرج، الغرفة تقفل ويتفك الحجز.
-
----
-
-## 🌐 النشر على سيرفر Node.js حقيقي
-
-### 1. على السيرفر
+### Install dependencies
 
 ```bash
-git clone <your-repo>
-cd collaborative-code-editor
 npm install
+```
+
+### Run in development mode
+
+```bash
+npm run dev
+```
+
+### Open in the browser
+
+```text
+http://localhost:3000
+```
+
+## Production Deployment
+
+### Live URL
+
+- `https://collab-editor.ddns.net`
+
+### Server Setup
+
+The project is currently deployed on an Oracle Cloud Ubuntu instance and served through:
+
+- `PM2` for process management
+- `Nginx` as a reverse proxy
+- `Let's Encrypt` for HTTPS
+
+### Deploy Script
+
+The repository includes an automated deployment script:
+
+```bash
+./deploy-oracle.sh
+```
+
+This script:
+
+- builds the app locally
+- syncs the required files to the Oracle server
+- installs production dependencies on the server
+- restarts the app with `PM2`
+
+## Running the App Manually in Production
+
+### Build
+
+```bash
 npm run build
 ```
 
-### 2. تشغيل مباشر
+### Start
 
 ```bash
 HOSTNAME=0.0.0.0 PORT=3000 npm start
 ```
 
-### 3. تشغيل دائم باستخدام PM2
+### PM2
 
 ```bash
-npm install -g pm2
 pm2 start ecosystem.config.js
 pm2 save
-pm2 startup
 ```
 
-### 4. ربط دومين أو IP عبر Nginx
+## STUN / TURN Notes
 
-اعمل reverse proxy إلى:
+The project uses public Google STUN servers by default. For stricter NAT environments, a TURN server should be added in [useWebRTC.ts](/Users/AyshaKassem/Desktop/Web/collaborative%20code%20editor/hooks/useWebRTC.ts).
 
-```txt
-http://127.0.0.1:3000
-```
+Example configuration:
 
-مهم:
-- افتح بورت `80` و`443`.
-- لو هتجرب WebRTC من خارج الشبكة، استخدم `https`.
-- لو المستخدمين على شبكات مقفولة، أضف TURN server بجانب STUN.
-
----
-
-## 🔒 STUN/TURN
-
-الكود يستخدم Google STUN servers مجاناً:
-- `stun:stun.l.google.com:19302`
-- `stun:stun1.l.google.com:19302`
-
-للشبكات المحجوبة (NAT صارم)، أضف TURN server في `hooks/useWebRTC.ts`:
-```typescript
+```ts
 const ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
   {
@@ -147,12 +172,10 @@ const ICE_SERVERS = [
 ]
 ```
 
----
+## Future Improvements
 
-## 💡 تحسينات مستقبلية
-
-- [ ] CRDT (Yjs) بدلاً من OT للدقة الأعلى
-- [ ] Chat text channel
-- [ ] Code execution (sandboxed)
-- [ ] File tree sidebar
-- [ ] GitHub Gist export
+- Replace OT with a CRDT-based approach such as `Yjs`
+- Add a text chat channel
+- Add sandboxed code execution
+- Add a file tree sidebar
+- Add export or GitHub Gist integration

@@ -21,6 +21,7 @@ rsync -avP --delete \
   --exclude '.git' \
   --exclude '.venv' \
   --exclude 'node_modules' \
+  --exclude '.next/cache' \
   --exclude 'ssh-key-*.key' \
   --exclude '*.pem' \
   --exclude '.DS_Store' \
@@ -70,7 +71,7 @@ ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no "$USER_NAME@$HOST" "
   echo '--- PM2 STATUS ---'
   pm2 status
   echo '--- HEALTH CHECK ---'
-  curl -I http://127.0.0.1:3000 || true
+  curl -sS http://127.0.0.1:3000 >/dev/null && echo 'app responded on port 3000' || true
   echo '--- TUNNEL URL ---'
   grep -o 'https://[^ ]*trycloudflare.com' ~/.pm2/logs/$TUNNEL_NAME-error.log | tail -n 1 || true
 "
